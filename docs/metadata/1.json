@@ -1,0 +1,6 @@
+{
+  "name": "Agent Streak Badge — Tier 1: First Check-In",
+  "description": "Soulbound milestone badge of the Agent Streak club. Awarded for completing a first daily check-in as an Agent ID holder. Non-transferable proof of attendance; not a financial asset.",
+  "image": "1.svg",
+  "attributes": [{"trait_type": "Tier", "value": 1}]
+}
