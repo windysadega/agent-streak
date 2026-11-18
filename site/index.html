@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Streak — the daily check-in club for Agent ID holders</title>
+<meta name="description" content="Check in daily on BNB Chain, build your streak, and claim free soulbound milestone badges. Only for Agent ID holders.">
+<style>
+  :root { --bg:#0d1526; --card:#14213d; --line:#26355c; --txt:#f5f0e6; --mut:#9db2ce; --acc:#e6b800; --ok:#3ecf6f; --bad:#ef6461; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Arial, Helvetica, sans-serif; background:var(--bg); color:var(--txt); }
+  .wrap { max-width:760px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:34px; margin:8px 0 4px; }
+  h1 .s { color:var(--acc); }
+  .tag { color:var(--mut); font-size:17px; margin:0 0 20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin:14px 0; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; }
+  .stat { flex:1 1 120px; background:#0d1526; border:1px solid var(--line); border-radius:12px; padding:12px; text-align:center; }
+  .stat b { display:block; font-size:26px; }
+  .stat span { color:var(--mut); font-size:13px; }
+  button { background:var(--acc); color:#141414; border:0; border-radius:10px; padding:12px 18px; font-size:16px; font-weight:bold; cursor:pointer; }
+  button:disabled { background:#3a4767; color:#8fa1bd; cursor:not-allowed; }
+  button.ghost { background:transparent; color:var(--txt); border:1px solid var(--line); }
+  a { color:var(--acc); }
+  .mut { color:var(--mut); } .ok { color:var(--ok); } .bad { color:var(--bad); }
+  .tier { display:flex; align-items:center; gap:14px; }
+  .tier img { width:64px; height:64px; border-radius:12px; }
+  .tier .grow { flex:1; }
+  .pill { font-size:12px; border:1px solid var(--line); border-radius:999px; padding:3px 10px; color:var(--mut); }
+  .pill.owned { color:var(--ok); border-color:var(--ok); }
+  .pill.ready { color:var(--acc); border-color:var(--acc); }
+  code { background:#0d1526; padding:2px 6px; border-radius:6px; font-size:13px; word-break:break-all; }
+  ul { margin:8px 0; padding-left:20px; } li { margin:5px 0; }
+  .foot { color:var(--mut); font-size:13px; margin-top:28px; line-height:1.55; }
+  #status { min-height:22px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Agent <span class="s">Streak</span></h1>
+  <p class="tag">Check in daily. Earn your stripes. A daily ritual on BNB Chain, open only to Agent ID holders.</p>
+
+  <div class="card">
+    <div class="row" style="align-items:center">
+      <div class="grow" style="flex:1">
+        <div id="who" style="font-size:18px">Not connected</div>
+        <div id="agentStatus" class="mut">Connect your wallet to see your Agent ID status, streak and badges.</div>
+      </div>
+      <button id="connectBtn">Connect wallet</button>
+    </div>
+    <p id="status" class="mut"></p>
+    <div class="row" id="statsRow" style="display:none">
+      <div class="stat"><b id="stStreak">–</b><span>current streak (days)</span></div>
+      <div class="stat"><b id="stBest">–</b><span>best streak</span></div>
+      <div class="stat"><b id="stTotal">–</b><span>total check-ins</span></div>
+      <div class="stat"><b id="stPoints">–</b><span>points (score only)</span></div>
+    </div>
+    <p><button id="checkInBtn" disabled>Check in for today</button>
+    <span id="checkInNote" class="mut"></span></p>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Milestone badges — free, soulbound</h3>
+    <div class="tier"><img src="metadata/1.svg" alt="Tier 1 badge">
+      <div class="grow"><b>Tier 1 — First Check-In</b><div class="mut">Claim after your first check-in.</div></div>
+      <span class="pill" id="pill1">…</span><button id="mint1" disabled>Claim</button></div>
+    <hr style="border-color:var(--line)">
+    <div class="tier"><img src="metadata/2.svg" alt="Tier 2 badge">
+      <div class="grow"><b>Tier 2 — 7-Day Streak</b><div class="mut">Claim when your best streak reaches 7 days.</div></div>
+      <span class="pill" id="pill2">…</span><button id="mint2" disabled>Claim</button></div>
+    <hr style="border-color:var(--line)">
+    <div class="tier"><img src="metadata/3.svg" alt="Tier 3 badge">
+      <div class="grow"><b>Tier 3 — 21-Day Streak</b><div class="mut">Claim when your best streak reaches 21 days.</div></div>
+      <span class="pill" id="pill3">…</span><button id="mint3" disabled>Claim</button></div>
+    <p class="mut">Badges are soulbound: they cannot be transferred or sold. They are proof that you showed up — nothing more, and that is the point.</p>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">How it works</h3>
+    <ul>
+      <li>Every action is gated by <b>Agent ID</b>: your wallet must hold one (checked on-chain against the official Agent ID contract). One person, one identity — streaks and badges can't be farmed with borrowed IDs.</li>
+      <li>Check in once per UTC day. Consecutive days grow your streak; a missed day restarts it. Points: 10 per check-in, +5 bonus while your streak is 7+ days. Points are a score only — not a token, no monetary value, nothing to redeem.</li>
+      <li>No funds are ever requested: no payments, no token approvals, no deposits. You only pay the small BNB network fee for your own transactions, which you confirm in your own wallet.</li>
+      <li>Don't have an Agent ID yet? Claim yours in the Binance App: <b>Wallet → homepage banner → Agent ID</b>.</li>
+    </ul>
+    <div class="row">
+      <div class="stat"><b id="gUsers">–</b><span>members checked in</span></div>
+      <div class="stat"><b id="gTotal">–</b><span>total check-ins</span></div>
+    </div>
+  </div>
+
+  <p class="foot">
+    Contracts (BNB Chain, open-source &amp; verified):
+    Check-in <a href="https://bscscan.com/address/0xed28b68bdd35ecc21953312543b1964ad1073516" target="_blank" rel="noopener">0xed28…073516</a> ·
+    Badge <a href="https://bscscan.com/address/0x40d23c5b47ac9d571cfbd50a5724f8d9e5d57148" target="_blank" rel="noopener">0x40d2…d57148</a><br>
+    Agent Streak is an independent community project built for the Agent ID Hackathon. It is not affiliated with Binance.
+    Points and badges carry no monetary value and nothing on this page is a promise of any reward or return.
+  </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.min.js"></script>
+<script>
+const CHECKIN = "0xed28b68bdd35ecc21953312543b1964ad1073516";
+const BADGE   = "0x40d23c5b47ac9d571cfbd50a5724f8d9e5d57148";
+const BSC_RPC = "https://bsc-dataseed.bnbchain.org/";
+const CI_ABI = [
+  "function checkIn()",
+  "function isAgent(address) view returns (bool)",
+  "function handleOf(address) view returns (string)",
+  "function statsOf(address) view returns (uint64,uint32,uint32,uint64,uint64)",
+  "function hasCheckedInToday(address) view returns (bool)",
+  "function totalUsers() view returns (uint256)",
+  "function totalCheckInsAll() view returns (uint256)"
+];
+const BG_ABI = [
+  "function mint(uint8) returns (uint256)",
+  "function eligible(address,uint8) view returns (bool)",
+  "function hasTier(address,uint8) view returns (bool)"
+];
+const $ = id => document.getElementById(id);
+const readProvider = new ethers.JsonRpcProvider(BSC_RPC);
+const ciRead = new ethers.Contract(CHECKIN, CI_ABI, readProvider);
+let signer = null, account = null;
+
+function setStatus(t, cls) { const s = $("status"); s.textContent = t || ""; s.className = cls || "mut"; }
+
+async function loadGlobals() {
+  try {
+    $("gUsers").textContent = (await ciRead.totalUsers()).toString();
+    $("gTotal").textContent = (await ciRead.totalCheckInsAll()).toString();
+  } catch (e) { /* read RPC hiccup; leave dashes */ }
+}
+
+async function refresh() {
+  if (!account) return;
+  const ci = new ethers.Contract(CHECKIN, CI_ABI, signer);
+  const bg = new ethers.Contract(BADGE, BG_ABI, signer);
+  const isAgent = await ci.isAgent(account);
+  if (!isAgent) {
+    $("agentStatus").innerHTML = '<span class="bad">This wallet holds no Agent ID.</span> Agent Streak is for Agent ID holders only — claim yours in the Binance App (Wallet → banner → Agent ID), then reconnect.';
+    $("statsRow").style.display = "none";
+    $("checkInBtn").disabled = true;
+    return;
+  }
+  let handle = "";
+  try { handle = await ci.handleOf(account); } catch (e) {}
+  $("who").textContent = handle ? ("Welcome, " + handle + ".ai") : account;
+  $("agentStatus").innerHTML = '<span class="ok">Agent ID verified on-chain ✓</span>';
+  const [lastDay, streak, best, total, points] = await ci.statsOf(account);
+  $("statsRow").style.display = "flex";
+  $("stStreak").textContent = streak; $("stBest").textContent = best;
+  $("stTotal").textContent = total; $("stPoints").textContent = points;
+  const doneToday = await ci.hasCheckedInToday(account);
+  $("checkInBtn").disabled = doneToday;
+  $("checkInNote").textContent = doneToday ? "Checked in ✓ — come back after the next UTC midnight." : "One check-in per UTC day.";
+  for (const t of [1, 2, 3]) {
+    const owned = await bg.hasTier(account, t);
+    const elig = await bg.eligible(account, t);
+    const pill = $("pill" + t), btn = $("mint" + t);
+    if (owned) { pill.textContent = "In your wallet"; pill.className = "pill owned"; btn.disabled = true; }
+    else if (elig) { pill.textContent = "Ready to claim"; pill.className = "pill ready"; btn.disabled = false; }
+    else { pill.textContent = "Locked — keep streaking"; pill.className = "pill"; btn.disabled = true; }
+  }
+  loadGlobals();
+}
+
+$("connectBtn").onclick = async () => {
+  if (!window.ethereum) { setStatus("No wallet found in this browser. Open this page in a browser with a Web3 wallet, or use your own AI agent with the project skill file.", "bad"); return; }
+  try {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const net = await provider.getNetwork();
+    if (net.chainId !== 56n) {
+      await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x38" }] });
+    }
+    signer = await provider.getSigner();
+    account = await signer.getAddress();
+    $("connectBtn").textContent = account.slice(0, 6) + "…" + account.slice(-4);
+    setStatus("");
+    await refresh();
+  } catch (e) { setStatus("Connection failed: " + (e.shortMessage || e.message), "bad"); }
+};
+
+$("checkInBtn").onclick = async () => {
+  try {
+    setStatus("Confirm the check-in in your wallet…");
+    const ci = new ethers.Contract(CHECKIN, CI_ABI, signer);
+    const tx = await ci.checkIn();
+    setStatus("Sent — waiting for confirmation…");
+    await tx.wait();
+    setStatus("Checked in ✓", "ok");
+    await refresh();
+  } catch (e) { setStatus("Check-in failed: " + (e.shortMessage || e.message), "bad"); }
+};
+
+for (const t of [1, 2, 3]) {
+  $("mint" + t).onclick = async () => {
+    try {
+      setStatus("Confirm the badge claim in your wallet…");
+      const bg = new ethers.Contract(BADGE, BG_ABI, signer);
+      const tx = await bg.mint(t);
+      await tx.wait();
+      setStatus("Tier " + t + " badge claimed ✓", "ok");
+      await refresh();
+    } catch (e) { setStatus("Claim failed: " + (e.shortMessage || e.message), "bad"); }
+  };
+}
+
+loadGlobals();
+</script>
+</body>
+</html>
